@@ -5,6 +5,8 @@ $db = require __DIR__ . '/db.php';
 
 $config = [
     'id' => 'basic',
+    'name' => 'CRM',
+    'language' => 'ru_RU',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'aliases' => [
@@ -12,15 +14,19 @@ $config = [
         '@npm'   => '@vendor/npm-asset',
     ],
     'components' => [
+        'authManager' => [
+            'class' => 'yii\rbac\DbManager',
+            'cache' => 'cache'
+        ],
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
-            'cookieValidationKey' => '_0bp_47-whd7mfins9kDbOyhfGx160e2',
+            'cookieValidationKey' => 'UgpAEi9E1elKFL-US1BLeAX2aHRU1VPB',
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'app\models\User',
+            'identityClass' => \app\models\UserIdentification::class,
             'enableAutoLogin' => true,
         ],
         'errorHandler' => [
@@ -42,14 +48,16 @@ $config = [
             ],
         ],
         'db' => $db,
-        /*
+
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
+            'enableStrictParsing' => false,
             'rules' => [
+                // ...
             ],
         ],
-        */
+
     ],
     'params' => $params,
 ];
