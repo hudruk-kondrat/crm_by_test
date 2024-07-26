@@ -42,6 +42,15 @@ class LoginForm extends Model
      * @param string $attribute the attribute currently being validated
      * @param array $params the additional name-value pairs given in the rule
      */
+    public function attributeLabels()
+    {
+        return [
+            'username'  => 'Имя',
+            'password'  => 'Пароль',
+            'rememberMe'=> 'Запомнить меня?'
+        ];
+    }
+
     public function validatePassword($attribute, $params)
     {
         if (!$this->hasErrors()) {
@@ -73,7 +82,7 @@ class LoginForm extends Model
     public function getUser()
     {
         if ($this->_user === false) {
-            $this->_user = User::findByUsername($this->username);
+            $this->_user = UserIdentification::findByUsername($this->username);
         }
 
         return $this->_user;

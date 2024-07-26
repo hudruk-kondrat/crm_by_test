@@ -2,103 +2,108 @@
 
 namespace app\models;
 
-class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
+use Yii;
+use app\components\RbacItems;
+/**
+ * This is the model class for table "user".
+ *
+ * @property int $id
+ * @property string $login Логин
+ * @property string $password Пароль
+ * @property string $firstname Имя
+ * @property string $lastname Фамилия
+ * @property string $role Роль
+ * @property string $email Почта
+ *
+ * @property WorkLog[] $workLogs
+ */
+class User extends \yii\db\ActiveRecord
 {
-    public $id;
-    public $username;
-    public $password;
-    public $authKey;
-    public $accessToken;
-
-    private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
-
-
     /**
      * {@inheritdoc}
      */
-    public static function findIdentity($id)
+    public static function tableName()
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        return 'user';
     }
 
     /**
      * {@inheritdoc}
      */
-    public static function findIdentityByAccessToken($token, $type = null)
+    public function rules()
     {
-        foreach (self::$users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
+        return [
+            [['login', 'password', 'firstname', 'lastname', 'email'], 'required'],
+            [['login', 'password', 'firstname', 'lastname', 'role', 'email'], 'string', 'max' => 255],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'login' => 'Логин',
+            'password' => 'Пароль',
+            'firstname' => 'Имя',
+            'lastname' => 'Фамилия',
+            'role' => 'Роль',
+            'email' => 'Почта',
+        ];
+    }
+
+    public function beforeSave($insert)
+    {
+        if ($insert) {
+            $this->password = md5($this->password);
+        } else {
+            if ($this->password != $this->getOldAttribute('password')) {
+                $this->password = md5($this->password);
             }
         }
-
-        return null;
+        return parent::beforeSave($insert);
     }
 
-    /**
-     * Finds user by username
-     *
-     * @param string $username
-     * @return static|null
-     */
-    public static function findByUsername($username)
+
+    public function afterSave($insert, $changedAttributes)
     {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
+        if (!$insert) {
+            if(isset($changedAttributes['role']) AND $this->role!=$changedAttributes['role']) {
+                $auth = Yii::$app->authManager;
+                $auth->revokeAll($this->id);
+                $authorRole = $auth->getRole($this->role);
+                $auth->assign($authorRole, $this->id);
             }
+        } else {
+            $auth = Yii::$app->authManager;
+            $authorRole = $auth->getRole($this->role);
+            $auth->assign($authorRole, $this->id); // Назначаем пользователю, которому принадлежит модель User
         }
-
-        return null;
+        parent::afterSave($insert, $changedAttributes);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getId()
+    public function getRol()
     {
-        return $this->id;
+        return \app\components\RbacItems::getRoleName($this->role);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getAuthKey()
+
+    public function beforeDelete()
     {
-        return $this->authKey;
+        $auth = Yii::$app->authManager;
+        $auth->revokeAll($this->id);
+        return parent::beforeDelete();
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function validateAuthKey($authKey)
-    {
-        return $this->authKey === $authKey;
-    }
-
-    /**
-     * Validates password
+     * Gets query for [[WorkLogs]].
      *
-     * @param string $password password to validate
-     * @return bool if password provided is valid for current user
+     * @return \yii\db\ActiveQuery
      */
-    public function validatePassword($password)
+    public function getWorkLogs()
     {
-        return $this->password === $password;
+        return $this->hasMany(WorkLog::class, ['user_id' => 'id']);
     }
 }

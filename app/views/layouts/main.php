@@ -39,15 +39,19 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav'],
         'items' => [
-            ['label' => 'Home', 'url' => ['/site/index']],
-            ['label' => 'About', 'url' => ['/site/about']],
-            ['label' => 'Contact', 'url' => ['/site/contact']],
+            ['label' => 'Главная', 'url' => ['/work-log/index'], 'visible'=>Yii::$app->user->can(\app\components\RbacItems::ROLE_MANAGER)],
+            ['label' => 'Пользователи', 'url' => ['/user/index'], 'visible'=>Yii::$app->user->can(\app\components\RbacItems::ROLE_ADMIN)],
+            ['label' => 'Статусы лида', 'url' => ['/lead-status/index'], 'visible'=>Yii::$app->user->can(\app\components\RbacItems::ROLE_ADMIN)],
+            ['label' => 'Этапы сделки', 'url' => ['/stages-transactions/index'], 'visible'=>Yii::$app->user->can(\app\components\RbacItems::ROLE_ADMIN)],
+            ['label' => 'Лиды', 'url' => ['/lead/index'], 'visible'=>Yii::$app->user->can(\app\components\RbacItems::ROLE_MANAGER)],
+            ['label' => 'Продукты', 'url' => ['/products/index'], 'visible'=>Yii::$app->user->can(\app\components\RbacItems::ROLE_MANAGER)],
+
             Yii::$app->user->isGuest
-                ? ['label' => 'Login', 'url' => ['/site/login']]
+                ? ['label' => 'Вход', 'url' => ['/site/login']]
                 : '<li class="nav-item">'
                     . Html::beginForm(['/site/logout'])
                     . Html::submitButton(
-                        'Logout (' . Yii::$app->user->identity->username . ')',
+                        'Выход (' . Yii::$app->user->identity->login . ')',
                         ['class' => 'nav-link btn btn-link logout']
                     )
                     . Html::endForm()
