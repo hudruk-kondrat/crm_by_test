@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use ErrorException;
 use Yii;
 
 /**
@@ -55,13 +56,17 @@ class Lead extends \yii\db\ActiveRecord
     public function afterSave($insert, $changedAttributes)
     {
         if ($insert) {
-            $wlog = new WorkLog();
-            $wlog->lead_id=$this->id;
-            $wlog->user_id = Yii::$app->user->identity->id;
-            $wlog->lead_status_id = (LeadStatus::find()->One())->id;
-            $wlog->stages_transactions_id= (StagesTransactions::find()->One())->id;
-            $wlog->products = array();
-            $wlog->save();
+            try {
+                $wlog = new WorkLog();
+                $wlog->lead_id=$this->id;
+                $wlog->user_id = Yii::$app->user->identity->id;
+                $wlog->lead_status_id = (LeadStatus::find()->One())->id;
+                $wlog->stages_transactions_id= (StagesTransactions::find()->One())->id;
+                $wlog->products = array();
+                $wlog->save();
+            } catch (ErrorException $e) {
+                Yii::warning("Проблеммы с добавлением лида");
+            }
             $to  = Yii::$app->user->identity->email ;
             $subject = "Лид добавлен";
             $message = ' <p>Вам добавлен лид: </p>'.$this->name.' '.$this->telephone.' '.$this->email;
