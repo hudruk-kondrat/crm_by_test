@@ -105,11 +105,7 @@ class WorkLog extends \yii\db\ActiveRecord
 
     public function beforeSave($insert)
     {
-        if ($insert) {
-            $this->products= \yii\helpers\Json::encode($this->products);
-        } else {
-            $this->products= \yii\helpers\Json::encode($this->products);
-        }
+        $this->products= \yii\helpers\Json::encode($this->products);
         return parent::beforeSave($insert);
     }
 
@@ -117,4 +113,21 @@ class WorkLog extends \yii\db\ActiveRecord
     {
         $this->products= \yii\helpers\Json::decode($this->products);
     }
+
+    public function afterSave($insert, $changedAttributes)
+    {
+        if (!$insert) {
+            if (isset($changedAttributes['user_id']) and $this->user_id != $changedAttributes['user_id']) {
+                $to  = (User::find()->where(['id'=>$this->user_id])->One())->email ;
+                $subject = "Лид назначен";
+                $message = ' <p>Вам добавлен лид: </p>'. (Lead::find()->where(['id'=>$this->user_id])->One())->name.' '.(Lead::find()->where(['id'=>$this->user_id])->One())->telephone.' '.(Lead::find()->where(['id'=>$this->user_id])->One())->email;
+                $headers  = "Content-type: text/html; charset=windows-1251 \r\n";
+                $headers .= "From: От кого письмо <from@crm.com>\r\n";
+                $headers .= "Reply-To: reply-to@crm.com\r\n";
+                mail($to, $subject, $message, $headers);
+            }
+        }
+        parent::afterSave($insert, $changedAttributes);
+    }
+
 }

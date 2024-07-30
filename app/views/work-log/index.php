@@ -66,11 +66,18 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'Продукты',
                 'format' => 'ntext',
                 'content' => function ($data) {
-                    $list='<ul>';
-                    foreach ($data->products as $product) {
-                        $list .= '<li>'.(\app\models\Products::find()->where(['id'=>$product])->one())->name.'</li>';
+
+                    if(is_array($data->products) && !empty($data->products)){
+                        $list='<ul>';
+                        foreach ($data->products as $product) {
+                            $list .= '<li>'.(\app\models\Products::find()->where(['id'=>$product])->one())->name.'</li>';
+                        }
+                        $list.='<ul>';
+                    } else {
+                        $list = '<b>Не указано.</b>';
                     }
-                    $list.='<ul>';
+
+
                     return $list;
                 }
             ],

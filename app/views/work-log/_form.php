@@ -29,7 +29,7 @@ use unclead\multipleinput\MultipleInput;
     <?= $form->field($model, 'stages_transactions_id')->dropDownList(ArrayHelper::map(StagesTransactions::find()->all(), 'id','name')) ?>
 
     <?=  $form->field($model, 'products')->widget(MultipleInput::className(), [
-        'min' => 2,
+        'min' => 1,
         'columns' => [
                 [
                     'name'  => 'products',
