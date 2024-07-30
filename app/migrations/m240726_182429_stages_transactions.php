@@ -17,6 +17,11 @@ class m240726_182429_stages_transactions extends Migration
             'name'=>$this->string()->notNull()->comment('Название'),
             'description'=>$this->string()->comment('Описание'),
         ]);
+
+        $this->insert('{{%lead_status}}', [ //добавление первого пользователя системы
+            'name'=>'Базовый этап',
+            'description'=>'Базовый этап',
+        ]);
     }
 
     /**

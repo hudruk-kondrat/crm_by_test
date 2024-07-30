@@ -17,6 +17,12 @@ class m240726_182349_lead_status extends Migration
             'name'=>$this->string()->notNull()->comment('Название'),
             'description'=>$this->string()->comment('Описание'),
         ]);
+
+
+        $this->insert('{{%lead_status}}', [ //добавление первого пользователя системы
+            'name'=>'1 статус',
+            'description'=>'1 статус',
+        ]);
     }
 
     /**
